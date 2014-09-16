@@ -1,0 +1,42 @@
+{
+ "status": "success",
+ "users": [
+			{
+				"id":"101010",
+				"username":"demo",
+				"password":"admin",
+				"email":"demo@yahoo.com",
+				"isadmin":"Yes",
+				"status":"Active",
+				"roles" : [
+							{"lobid":"1"},
+							{"lobid":"2"},
+							{"lobid":"3"}
+
+				]
+			},
+			{
+				"id":"102010",
+				"username":"abc",
+				"password":"abc",
+				"email":"abc@yahoo.com",
+				"isadmin":"No",
+				"status":"Active",
+				"roles" : [
+							{"lobid":"1"},
+							{"lobid":"2"}
+							
+				]
+			},
+			{
+				"id":"103010",
+				"username":"xyz",
+				"password":"xyz",
+				"email":"xyz@yahoo.com",
+				"isadmin":"No",
+				"status":"Active",
+				"roles":[]
+			}
+		],
+ "message": "" 
+}

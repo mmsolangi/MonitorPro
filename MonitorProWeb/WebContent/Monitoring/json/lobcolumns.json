@@ -1,0 +1,22 @@
+
+{
+	"status": "success",	
+
+	"columns": [
+					{ "dataIndx": "outcomeHdrID","title": "ID", "width": 100 ,"fieldName" : "OUTCOMEHDRID"},
+					{ "dataIndx": "clientReqDateTime", "title":"Request Time", "width" : 200,"fieldName" : "CLIENTREQUESTDATETIME"},
+					{ "dataIndx": "outcomeStatus", "title":"Status", "width" : 100,"fieldName" : "OUTCOMESTATUS"},					
+					{ "dataIndx": "applicationID", "title":"Store ID", "width" : 120 ,"fieldName" : "APPLICATIONCODE"},
+{ "dataIndx": "storeName", "title":"Store Name", "width" : 200 ,"fieldName" : "STORENAME"},
+					{ "dataIndx": "slCode", "title":"Solution Logic Code", "width" : 180,"fieldName" : "SLCODE"},
+					{ "dataIndx": "correlID", "title":"Source Transaction ID", "width" : 225,"fieldName" : "CORRELATIONID"},					
+					{ "dataIndx": "clientUserID", "title":"User", "width" : 100 ,"fieldName" : "CLIENTUSERID"},										
+					{ "dataIndx": "timeTaken", "title":"Duration", "width" : 50 ,"fieldName" : "TIMETAKEN"},	
+					{ "dataIndx": "errorCode", "title":"Error Code", "width" : 300 ,"fieldName" : "ERRORCODE"}		
+	],	      
+
+	"message": "" 
+}
+
+
+ 

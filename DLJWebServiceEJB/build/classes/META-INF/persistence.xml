@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">  
+	<persistence-unit name="DLJWebServiceEJB">
+
+ <provider>org.hibernate.ejb.HibernatePersistence</provider>  
+	<jta-data-source>java:jboss/datasources/moniprods</jta-data-source>
+		<class>com.rc.jpa.Emailnotification</class>
+		<class>com.rc.jpa.Lob</class>
+		<class>com.rc.jpa.Login</class>
+		<class>com.rc.jpa.Outcomelogdetail</class>
+		<class>com.rc.jpa.Outcomelogheader</class>
+		<class>com.rc.jpa.Role</class>
+		<class>com.rc.jpa.Store</class>
+		<class>com.rc.jpa.User</class>
+		<class>com.rc.jpa.Message</class>
+		<properties>  
+      <property name="hibernate.transaction.jta.platform" value="org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform" />
+      <property name = "hibernate.show_sql" value = "true" />  
+      </properties>  
+	</persistence-unit>
+</persistence>
+

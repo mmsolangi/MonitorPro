@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Dashboard Admin Panel</title>
+    <link rel="stylesheet" href="css/layout.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/jquery-ui.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="themes/office/pqgrid.css" />
+    <link rel="stylesheet" href="css/pqgrid.min.css" />
+    <!--[if lt IE 9]>
+	<link rel="stylesheet" href="css/ie.css" type="text/css" media="screen" />
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+    <!--<script src="js/jquery-1.5.2.min.js" type="text/javascript"></script>
+    <script src="js/jquery-ui.js" type="text/javascript"></script>-->
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <!--<script type="text/javascript" src="js/jquery-placeholder.js"></script>     -->
+    <script src="js/hideshow.js" type="text/javascript"></script>
+    <script src="js/jquery.tablesorter.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="js/jquery.equalHeight.js"></script>
+    <script src="js/pqgrid.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="themes/office/pqgrid.css" />
+    <script type="text/javascript">
+
+
+
+
+        var currentLOB;
+        var LOBDataModel, LOBDetailDataModel;
+        var cols, colsDetail;
+        var LOBDetailData = new Array();
+        var gridDetail;
+        colsDetail = [{ title: "Detail ID", width: 100, dataIndx: "outcomeDTLID", editable: true },
+                        { title: "Application Code", width: 100, dataIndx: "applicationCode" },
+                        { title: "FLow Name", width: 150, dataIndx: "slStepName" },
+                        { title: "Log Level", width: 100, dataIndx: "errorType" },
+                        { title: "Error Code", width: 100, dataIndx: "sourceSystemErrorCode" },
+                        { title: "Error Desc", width: 150, dataIndx: "sourceSystemErrorDesc" },
+                        { title: "Input Message", width: 290, dataIndx: "inputPayload", editable: true,
+                            render: function (ui) {
+                                var rowData = ui.rowData,
+                                dataIndx = ui.dataIndx,
+                                cellData = rowData[dataIndx];
+                                return "<textarea readonly cols='40' rows='5'>" + cellData + "</textarea>";
+                            }
+                        },
+                        { title: "Output Message", width: 290, dataIndx: "outputPayload", editable: true,
+                            render: function (ui) {
+                                var rowData = ui.rowData,
+                                dataIndx = ui.dataIndx,
+                                cellData = rowData[dataIndx];
+                                return "<textarea readonly cols='40' rows='5'>" + cellData + "</textarea>";
+                            }
+                        }];
+        function PrepareLOBScreen() {
+            $.ajax({
+                url: 'json/lobcolumns.json',
+                method: 'get',
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == "success") {
+                        cols = data.columns;
+                        BindLOB();                        
+                    }
+                },
+                error: function (err) {
+                    alert('There is an error occured while fetching LOB structure.');
+                },
+                complete: function () {
+
+                }
+            });
+        }
+        function BindLOBDetail() {
+            gridDetail = $("div#lobdetail").pqGrid({ width: 950, height: 250,
+                dataModel: LOBDetailDataModel,
+                colModel: colsDetail,
+                title: currentLOB + " detail",
+                resizable: false,
+                columnBorders: true
+            });
+        }
+        function BindLOB() {
+            var grid1 = $("div#lobmaster").pqGrid({ width: 950, height: 250,
+                dataModel: LOBDataModel,
+                colModel: cols,
+                title: currentLOB + " master",
+                resizable: false,
+                columnBorders: true,
+                editable: false,
+                rowSelect: function (evt, obj) {
+                    LOBDetailData.length = 0;
+                    $.each(obj.data[obj.rowIndx].detail, function (i, item) {
+                        LOBDetailData.push(item);
+                    });
+                    BindLOBDetail();
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            LOBDataModel = {
+                location: "remote",
+                sorting: "remote",
+                paging: "remote",
+                dataType: "JSON",
+                editable: false,
+                method: "GET",
+                curPage: 1,
+                rPP: 5,
+                sortIndx: 1,
+                sortDir: "up",
+                topVisible: false,
+                rPPOptions: [1, 10, 20, 30, 40, 50, 100, 500, 1000],
+                getUrl: function () {
+                    var sortDir = (this.sortDir == "up") ? "asc" : "desc";
+                    var sort = new Array(); ;
+                    $.each(cols, function (i, item) {
+                        sort.push(item.dataIndx);
+                    });
+                    return { url: "json/lob.json", data: "cur_page=" + this.curPage + "&records_per_page=" + this.rPP + "&sortBy=" + sort[this.sortIndx] + "&dir=" + sortDir
+                    };
+                },
+                getData: function (data) {
+                    if (data.status == "success") {
+                        LOBDetailData.length = 0;
+                        BindLOBDetail();
+                        return { curPage: data.lob.currentPage, totalRecords: data.lob.totalRecords, data: data.lob.data };                        
+                    }
+                }
+            }
+
+
+            LOBDetailDataModel = {
+                location: "local",                
+                dataType: "JSON",
+                method: "GET",                
+                data: LOBDetailData
+            }
+
+
+
+
+            $('.column').equalHeight();
+            $(".tablesorter").tablesorter();
+            $('.dateField').datepicker();
+            $("#dialog").dialog({
+
+                autoOpen: false,
+                height: 300,
+                width: 350,
+                modal: true
+            });
+
+            //            $('.LOBSearchTextBox').val(watermark).addClass('watermark');
+            //            //if blur and no value inside, set watermark text and class again.
+            //            $('.LOBSearchTextBox').blur(function () {
+            //                if ($(this).val().length == 0) {
+            //                    $(this).val(watermark).addClass('watermark');
+            //                }
+            //            });
+            //            //if focus and text is watermrk, set it to empty and remove the watermark class
+            //            $('.LOBSearchTextBox').focus(function () {
+            //                if ($(this).val() == watermark) {
+            //                    $(this).val('').removeClass('watermark');
+            //                }
+            //            });
+            PopulateTabs();
+            //$(':input[placeholder]').placeholder();
+            // Radialize the colors
+            //$("#dialog").dialog("open");
+            //$(this).dialog("close");
+            //$(this).dialog("close");
+
+
+            Highcharts.getOptions().colors = Highcharts.map(Highcharts.getOptions().colors, function (color) {
+                return {
+                    radialGradient: { cx: 0.5, cy: 0.3, r: 0.7 },
+                    stops: [
+		            [0, color],
+		            [1, Highcharts.Color(color).brighten(-0.3).get('rgb')] // darken
+		        ]
+                };
+            });
+
+            // Build the chart
+            $('#container').highcharts({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false
+                },
+                loading: {
+                    labelStyle: {
+                        backgroundImage: 'url("loading.gif")'
+
+                    }
+                },
+                title: {
+                    text: ' '
+                },
+                subtitle: {
+                    text: ' '
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.y}</b>',
+                    percentageDecimals: 1
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            color: '#000000',
+                            connectorColor: '#000000',
+                            formatter: function () {
+                                return '<b>' + this.point.name + '</b>:<br> ' + Math.round(this.point.y) + '';
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: 'Browser share'
+                }]
+            });
+
+            PrepareOverallStatusChart();
+
+            var dt = new Array();
+            dt[0] = 110;
+            dt[1] = 98;
+            dt[2] = 145;
+
+            $('#container2').highcharts({
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'Errors for last two days'
+                },
+                subtitle: {
+                    text: 'Source: Errors Status'
+                },
+                xAxis: {
+                    categories: [
+                    'Today',
+                    '1 day before',
+                    '2 days before',
+
+
+                ]
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Orders'
+                    },
+                    max: 200
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f} mm</b></td></tr>',
+                    footerFormat: '</table>',
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0
+                    }
+                },
+                series: [{
+                    name: 'Tech erro',
+                    data: [49.9]
+
+                }, {
+                    name: 'Sys error',
+                    data: [83.6, 145.8, 158.5]
+
+                }, {
+                    name: 'Other error',
+                    data: dt
+
+                }]
+            });
+            $("tspan:contains('Highcharts.com')").css('display', 'none');
+        });
+        function GetColor(colorName) {
+            switch (colorName) {
+                case "Success":
+                    return "Green";
+                    break;
+                case "Errors":
+                    return "Red";
+                    break;
+                case "Warnings":
+                    return "Yellow";
+                    break;
+            }
+        }
+        function PrepareOverallStatusChart() {
+
+            //$("#imgOSLoading").css('display', 'inline');
+            $('#container').highcharts().showLoading();
+            $.ajax({
+                url: 'json/overallordersstatus.json',
+                method: 'get',
+                dataType: 'json',
+                success: function (data) {
+                    var dataArray = new Array();
+                    $.each(data.LOB, function (i, item) {
+                        var obj = new Object();
+                        obj.name = item.name;
+                        obj.y = item.value;
+                        obj.color = GetColor(item.name);
+                        dataArray.push(obj);
+                    });
+                    CreateOverallStatusChart(dataArray);
+                    $("tspan:contains('Highcharts.com')").css('display', 'none');
+                },
+                error: function (err) {
+                    alert('There is an error occured while creating chart.');
+                },
+                complete: function () {
+                    //var display = $("#txtOStodate").val() == "" ? "none" : "inline";
+                    $("#imgOSLoading").css('display', 'none');
+                    //$("#imgOSundo").css('display', display);
+                    $('#container').highcharts().hideLoading();
+                }
+            });
+        }
+
+        function CreateOverallStatusChart(lob) {
+            var title = $('#txtOSfromdate').val() != "" ? "Status from " + $('#txtOSfromdate').val() + " to " + $('#txtOStodate').val() : "Status for last two days";
+            var subtitle = "";
+            if ($("#OSlob").val() != "All LOB") {
+                subtitle = "LOB: " + $("#OSlob").val();
+            }
+            //debugger;
+            //debugger;
+            var chart = $('#container').highcharts();
+            chart.series[0].setData(lob);
+            chart.setTitle({ text: title }, { text: subtitle });
+            //chart.options.subtitle.text = subtitle;
+            //            chart.options.title.text = title;
+
+
+            //chartName.hideLoading();
+
+        }
+        function PopulateTabs() {
+            $.ajax({
+                url: 'json/tabs.json',
+                method: 'get',
+                dataType: 'json',
+                success: function (data) {
+                    if (data.status == "success") {
+                        CreateTabs(data.Tabs);
+                    }
+                },
+                error: function (err) {
+                    alert('There is an error occured while creating Tabs.');
+                },
+                complete: function () {
+
+                }
+            });
+        }
+
+        function CreateTabs(tabs) {
+            $.each(tabs, function (i, item) {
+                $("#tabsDiv").append("<div class='breadcrumb_divider'></div> <a href=\"javascript:LoadTab('" + item.name + "');\">" + item.name + "</a>");
+                $("#LOBMasterContainer").append("<div id='" + item.name + "' style='margin-left:15px;'></div>"); 
+            });
+        }
+
+        function LoadTab(name) {
+            var newTab = $("a:contains('" + name + "')");
+            EnableDisableTab(name, newTab);
+            //            var divToShow_ID ="#" + name + ".tabsDiv";
+            //            $("#main div.tabsDiv:visible").css('display', 'none');
+            //            $(divToShow_ID).css('display', 'inline');
+            $("#Dashboard.tabsDiv").css('display', (name == "Dashboard") ? 'inline' : 'none');
+            $("#LOB.tabsDiv").css('display', (name == "Dashboard") ? 'none' : 'inline');
+            if (name != "Dashboard") {
+                currentLOB = name;
+                PrepareLOBScreen();
+            }
+        }
+        function EnableDisableTab(name, newTab) {
+            var currentTab = $("a.current");
+            currentTab.removeClass('current');
+            currentTab.attr("href", "javascript:LoadTab('" + currentTab.text() + "')");
+
+            newTab.removeAttr('href');
+            newTab.addClass('current');
+        }
+
+        function ValidateOS() {
+            //            var fromdate = $("#txtOSfromdate");
+            //            var todate = $("#txtOStodate");
+            //            var bgcolor = fromdate.val() == "" ? "#f3d9d9" : "white";
+            //            fromdate.css('background-color', bgcolor);
+            //            var tobgcolor = todate.val() == "" ? "#f3d9d9" : "white";
+            //            todate.css('background-color', tobgcolor);
+            //            if (bgcolor == "white" && tobgcolor == "white") {
+            PrepareOverallStatusChart();
+            //}
+            return false;
+        }
+        function ResetOS() {
+            $("#txtOSfromdate").val('');
+            $("#txtOStodate").val('');
+            $('#OSlob').prop('selectedIndex', 0);
+            PrepareOverallStatusChart();
+        }
+        //        function UndoOSfilter() {
+        //            var fromdate = $("#txtOSfromdate").val('');
+        //            var todate = $("#txtOStodate").val('');
+        //            PrepareOverallStatusChart();
+        //        }
+    </script>
+    <script src="js/highcharts.js"></script>
+    <script src="js/modules/exporting.js"></script>
+</head>
+<body>
+    <div id="dialog" title="Basic dialog">
+        <p>
+            This is the default dialog which is useful for displaying information. The dialog
+            window can be moved, resized and closed with the 'x' icon.</p>
+    </div>
+    <header id="header">
+		<hgroup>
+			<h1 class="site_title"><a href="index.html">ROYAL CYBER</a></h1>
+			<h2 class="section_title">Messages Monitoring Solution</h2><div class="btn_view_site"><a href="http://www.royalcyber.com">View Site</a></div>
+		</hgroup>
+	</header>
+    <!-- end of header bar -->
+    <section id="secondary_bar">
+		<div class="user">
+			<p>Welcome Sohail </p>
+			<!-- <a class="logout_user" href="#" title="Logout">Logout</a> -->
+		</div>
+		<div class="breadcrumbs_container">
+			<article class="breadcrumbs"><div id="tabsDiv"><a class="current">Dashboard</a></div></article>
+		</div>
+	</section>
+    <!-- end of secondary bar -->
+    <aside id="sidebar" class="column">
+		<form class="quick_search">
+			<input type="text" value="Quick Search" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;">
+		</form>
+		<hr/>
+		<h3>Orders</h3>
+		<ul class="toggle">
+			<li class="icn_new_article"><a href="#">Overall</a></li>
+			<li class="icn_edit_article"><a href="#">Success</a></li>
+			<li class="icn_categories"><a href="#">Failure</a></li>
+			
+		</ul>
+		<h3>Users</h3>
+		<ul class="toggle">
+			
+			<li class="icn_view_users"><a href="#">Change Password</a></li>
+			<li class="icn_profile"><a href="#">Profile</a></li>
+            <li class="icn_jump_back"><a href="#">Logout</a></li>
+
+		</ul>
+		
+		<h3>Admin</h3>
+		<ul class="toggle">
+			<li class="icn_settings"><a href="#">Options</a></li>
+			<li class="icn_security"><a href="#">Security</a></li>
+		</ul>
+		
+		<footer style="display:none;">
+			<hr />
+			<p><strong>Copyright &copy; 2011 Website Admin</strong></p>
+			<p>Theme by <a href="http://www.medialoot.com">MediaLoot</a></p>
+		</footer>
+	</aside>
+    <!-- end of sidebar -->
+    <section id="main" class="column">
+		<div id="Dashboard" class="tabsDiv">
+		<h4 class="alert_info">Welcome to the Message Monitoring panel, this is information bar.</h4>
+		
+		<article class="module width_half">
+			<header><h3 class="tabs_involved" style="width:30%;">Overall Status</h3>
+                <div style="margin: 8px 10px 0 0;padding: 0;float: right;list-style: none;height: 24px;width:283px;text-align:right;" action="">
+                    <form method="post" onsubmit="return ValidateOS(this);">
+                        <select id="OSlob" class="date" style="height:17px;width:70px;" onchange="javascript:PrepareOverallStatusChart();">
+                            <option>All LOB</option>
+                            <option>Orders</option>
+                            <option>Inventory</option>
+                            <option>Catalog</option>                            
+                        </select>
+                       
+                        &nbsp; from <input type="text" id="txtOSfromdate" class="dateField date"  /> 
+                        to <input type="text" class="dateField date" id="txtOStodate"/>&nbsp;
+                        <input type="image" src="images/search.png" alt="" title="Search" height="15" style="margin-bottom:-3px;"/>&nbsp;
+                        <a href='javascript:ResetOS();'><img src="images/refresh.gif" alt="" title="reset" height="15" border="0" style="margin-bottom:-3px;"/></a>
+                     </form>
+                </div>
+                
+            </header>
+            
+			<div class="module_content">
+				<div id="container" style="min-width: 400px; height: 220px;width:350px; margin: 0 auto"></div>
+				
+				<!--<article class="stats_overview">
+					<div class="overview_today">
+						<p class="overview_day">Today</p>
+						<p class="overview_count">1,876</p>
+						<p class="overview_type">Hits</p>
+						<p class="overview_count">2,103</p>
+						<p class="overview_type">Views</p>
+					</div>
+					<div class="overview_previous">
+						<p class="overview_day">Yesterday</p>
+						<p class="overview_count">1,646</p>
+						<p class="overview_type">Hits</p>
+						<p class="overview_count">2,054</p>
+						<p class="overview_type">Views</p>
+					</div>
+				</article>-->
+				<div class="clear"></div>
+			</div>
+		</article><!-- end of stats article -->
+
+		<article class="module width_half">
+			<header><h3 class="tabs_involved" style="width:45%;">Errors Status Categorized</h3>
+                <div style="margin: 8px 10px 0 0;padding: 0;float: right;list-style: none;height: 24px;width:185px;display:none;text-align:right"><form>from <input type="text" id="Text1" placeholder="from date" class="dateField date"  /> to <input type="text" class="dateField date" id="Text2"/>&nbsp;<img src="images/search.png" alt="" title="Search" height="15" style="margin-bottom:-3px;"/>&nbsp;<img src="images/refresh.gif" alt="" title="Search" height="15" style="margin-bottom:-3px;"/></form></div>
+                
+            </header>
+            
+			<div class="module_content">
+				<div id="container2" style="min-width: 400px; height: 220px;width:350px; margin: 0 auto"></div>
+				
+				<!--<article class="stats_overview">
+					<div class="overview_today">
+						<p class="overview_day">Today</p>
+						<p class="overview_count">1,876</p>
+						<p class="overview_type">Hits</p>
+						<p class="overview_count">2,103</p>
+						<p class="overview_type">Views</p>
+					</div>
+					<div class="overview_previous">
+						<p class="overview_day">Yesterday</p>
+						<p class="overview_count">1,646</p>
+						<p class="overview_type">Hits</p>
+						<p class="overview_count">2,054</p>
+						<p class="overview_type">Views</p>
+					</div>
+				</article>-->
+				<div class="clear"></div>
+			</div>
+		</article><!-- end of stats article -->
+		<article class="modulewarnings width_3_quarter" style="display:inline;">
+		<header>
+            <h3 class="tabs_involved">Todays Alerts</h3>
+		<ul class="tabs" style="display:none;">
+   			<li><a href="#tab1">Posts</a></li>
+    		<li><a href="#tab2">Comments</a></li>
+		</ul>
+		</header>
+
+		<div class="tab_container">
+			<div id="tab1" class="tab_content">
+			<table class="tablesorter" cellspacing="0"> 
+			<thead> 
+				<tr> 
+   					<th></th> 
+    				<th>Order ID</th> 
+    				<th>Correlation ID</th> 
+                    <th>Order Date</th> 
+    				<th>Error Status</th> 
+    				<th>Status Code</th> 
+				</tr> 
+			</thead> 
+			<tbody> 
+				<tr> 
+   					
+    				<td>Lorem Ipsum Dolor Sit Amet</td> 
+    				<td>Articles</td> 
+    				<td>5th April 2011</td> 
+    				<td><input type="image" src="images/icn_edit.png" title="Edit"><input type="image" src="images/icn_trash.png" title="Trash"></td> 
+				</tr> 
+				<tr> 
+   					
+    				<td>Ipsum Lorem Dolor Sit Amet</td> 
+    				<td>Freebies</td> 
+    				<td>6th April 2011</td> 
+   				 	<td><input type="image" src="images/icn_edit.png" title="Edit"><input type="image" src="images/icn_trash.png" title="Trash"></td> 
+				</tr>
+				<tr> 
+   					<td><input type="checkbox"></td> 
+    				<td>Sit Amet Dolor Ipsum</td> 
+    				<td>Tutorials</td> 
+    				<td>10th April 2011</td> 
+    				<td><input type="image" src="images/icn_edit.png" title="Edit"><input type="image" src="images/icn_trash.png" title="Trash"></td> 
+				</tr> 
+				<tr> 
+   					<td><input type="checkbox"></td> 
+    				<td>Dolor Lorem Amet</td> 
+    				<td>Articles</td> 
+    				<td>16th April 2011</td> 
+   				 	<td><input type="image" src="images/icn_edit.png" title="Edit"><input type="image" src="images/icn_trash.png" title="Trash"></td> 
+				</tr>
+				<tr> 
+   					<td><input type="checkbox"></td> 
+    				<td>Dolor Lorem Amet</td> 
+    				<td>Articles</td> 
+    				<td>16th April 2011</td> 
+   				 	<td><input type="image" src="images/icn_edit.png" title="Edit"><input type="image" src="images/icn_trash.png" title="Trash"></td> 
+				</tr>  
+			</tbody> 
+			</table>
+			</div><!-- end of #tab1 -->
+			
+			<div id="tab2" class="tab_content" style="display:none;">
+			<table class="tablesorter" cellspacing="0"> 
+			<thead> 
+				<tr> 
+   					<th></th> 
+    				<th>Comment</th> 
+    				<th>Posted by</th> 
+    				<th>Posted On</th> 
+    				<th>Actions</th> 
+				</tr> 
+			</thead> 
+			<tbody> 
+				<tr> 
+   					<td><input type="checkbox"></td> 
+    				<td>Lorem Ipsum Dolor Sit Amet</td> 
+    				<td>Mark Corrigan</td> 
+    				<td>5th April 2011</td> 
+    				<td><input type="image" src="images/icn_edit.png" title="Edit"><input type="image" src="images/icn_trash.png" title="Trash"></td> 
+				</tr> 
+				<tr> 
+   					<td><input type="checkbox"></td> 
+    				<td>Ipsum Lorem Dolor Sit Amet</td> 
+    				<td>Jeremy Usbourne</td> 
+    				<td>6th April 2011</td> 
+   				 	<td><input type="image" src="images/icn_edit.png" title="Edit"><input type="image" src="images/icn_trash.png" title="Trash"></td> 
+				</tr>
+				<tr> 
+   					<td><input type="checkbox"></td> 
+    				<td>Sit Amet Dolor Ipsum</td> 
+    				<td>Super Hans</td> 
+    				<td>10th April 2011</td> 
+    				<td><input type="image" src="images/icn_edit.png" title="Edit"><input type="image" src="images/icn_trash.png" title="Trash"></td> 
+				</tr> 
+				<tr> 
+   					<td><input type="checkbox"></td> 
+    				<td>Dolor Lorem Amet</td> 
+    				<td>Alan Johnson</td> 
+    				<td>16th April 2011</td> 
+   				 	<td><input type="image" src="images/icn_edit.png" title="Edit"><input type="image" src="images/icn_trash.png" title="Trash"></td> 
+				</tr> 
+				<tr> 
+   					<td><input type="checkbox"></td> 
+    				<td>Dolor Lorem Amet</td> 
+    				<td>Dobby</td> 
+    				<td>16th April 2011</td> 
+   				 	<td><input type="image" src="images/icn_edit.png" title="Edit"><input type="image" src="images/icn_trash.png" title="Trash"></td> 
+				</tr> 
+			</tbody> 
+			</table>
+
+			</div><!-- end of #tab2 -->
+			
+		</div><!-- end of .tab_container -->
+		
+		</article><!-- end of content manager article -->
+		
+		<article class="module width_quarter" style="display:inline;">
+			<header><h3>Message Board</h3></header>
+			<div class="message_list">
+				<div class="module_content">
+					<div class="message"><p>Order ID 1110290 is in failure status.</p>
+					<p><strong>Sohail</strong></p></div>
+					<div class="message"><p>Durgesh Please ask omair regarding Order ID 1110290.</p>
+					<p><strong>Gajendra</strong></p></div>
+					<div class="message"><p>Yeah sure I do.</p>
+					<p><strong>Durgesh</strong></p></div>
+					<div class="message"><p>I have discussed with Omair. He will further proceed.</p>
+					<p><strong>Durgesh</strong></p></div>
+					
+				</div>
+			</div>
+			<footer>
+				<form class="post_message">
+					<input type="text" value="Message" onfocus="if(!this._haschanged){this.value=''};this._haschanged=true;">
+					<input type="submit" class="btn_post_message" value=""/>
+				</form>
+			</footer>
+		</article><!-- end of messages article -->
+		
+		<div class="clear"></div>
+		
+		<article class="module width_full" style="display:none;">
+			<header><h3>Post New Article</h3></header>
+				<div class="module_content">
+						<fieldset>
+							<label>Post Title</label>
+							<input type="text">
+						</fieldset>
+						<fieldset>
+							<label>Content</label>
+							<textarea rows="12"></textarea>
+						</fieldset>
+						<fieldset style="width:48%; float:left; margin-right: 3%;"> <!-- to make two field float next to one another, adjust values accordingly -->
+							<label>Category</label>
+							<select style="width:92%;">
+								<option>Articles</option>
+								<option>Tutorials</option>
+								<option>Freebies</option>
+							</select>
+						</fieldset>
+						<fieldset style="width:48%; float:left;"> <!-- to make two field float next to one another, adjust values accordingly -->
+							<label>Tags</label>
+							<input type="text" style="width:92%;">
+						</fieldset><div class="clear"></div>
+				</div>
+			<footer>
+				<div class="submit_link">
+					<select>
+						<option>Draft</option>
+						<option>Published</option>
+					</select>
+					<input type="submit" value="Publish" class="alt_btn">
+					<input type="submit" value="Reset">
+				</div>
+			</footer>
+		</article><!-- end of post new article -->
+
+		<h4 class="alert_warning">A Warning Alert</h4>
+
+		
+		<h4 class="alert_error">An Error Message</h4>
+		
+		<h4 class="alert_success">A Success Message</h4>
+		
+		<article class="module width_full" style="display:none;">
+			<header><h3>Basic Styles</h3></header>
+				<div class="module_content">
+					<h1>Header 1</h1>
+					<h2>Header 2</h2>
+					<h3>Header 3</h3>
+					<h4>Header 4</h4>
+					<p>Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras mattis consectetur purus sit amet fermentum. Maecenas faucibus mollis interdum. Maecenas faucibus mollis interdum. Cras justo odio, dapibus ac facilisis in, egestas eget quam.</p>
+
+<p>Donec id elit non mi porta <a href="#">link text</a> gravida at eget metus. Donec ullamcorper nulla non metus auctor fringilla. Cras mattis consectetur purus sit amet fermentum. Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum.</p>
+
+					<ul>
+						<li>Donec ullamcorper nulla non metus auctor fringilla. </li>
+						<li>Cras mattis consectetur purus sit amet fermentum.</li>
+						<li>Donec ullamcorper nulla non metus auctor fringilla. </li>
+						<li>Cras mattis consectetur purus sit amet fermentum.</li>
+					</ul>
+				</div>
+		</article><!-- end of styles article -->
+		<div class="spacer"></div>
+        </div>
+       <div id="LOB" class="tabsDiv" style="display:none;">
+               <div id="lobmaster" style="margin-left:15px;display:none;"> 
+                </div>
+                <br /><br />
+
+            <article class="module width_full" style="height:350px;" id="LOBMasterContainer">
+			    <header><h3 class="tabs_involved" style="width:25%;" id="HeaderHeading">LOB Log Master</h3>
+                    <div style="margin: 8px 10px 0 0;padding: 0;float: right;list-style: none;height: 24px;width:65%;text-align:right;">
+                        <form method="post" onsubmit="return ValidateOS(this);">
+                        <input type="text" id="txtlobSearch" class="date LOBSearchTextBox" style="width:100px;"  />&nbsp;
+                            <select id="ddlerrortype" class="date" style="height:18px;width:100px;">
+                                <option>ALL</option>
+                        <option>SYS ERROR</option>
+                        <option>TECH ERROR</option>
+                        <option>SUCCESS</option>                           
+                            </select>
+                        
+                            &nbsp; from <input type="text" id="txtlobfromdate" class="dateField date" style="width:65px;text-align:center;"  /> 
+                            to <input type="txtlobtodate" class="dateField date" id="Text4" style="width:65px;text-align:center;"/>&nbsp;
+                            <input type="image" src="images/search.png" alt="" id="btnlobsearch" title="Search" height="15" style="margin-bottom:-3px;"/>&nbsp;
+                            <a href='javascript:PrepareOverallStatusChart();'><img src="images/refresh.gif" alt="" title="reload" height="15" border="0" style="margin-bottom:-3px;"/></a>
+                         </form>
+                    </div>                
+                </header>
+                <br />
+              
+
+            </article>
+
+            <article class="module width_full" style="height:350px;" id="LOBDetailContainer">
+			    <header><h3 class="tabs_involved" style="width:30%;" id="DetailHeading">LOB Log Detail</h3>
+                </header>
+                <br />
+                <div id="lobdetail" style="margin-left:15px;">
+            
+                </div>
+            </article>
+            
+       
+       
+       
+    </div>
+    <br />
+
+
+
+	</section>
+</body>
+</html>

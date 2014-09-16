@@ -1,0 +1,21 @@
+
+{
+	"status": "success",
+
+	"LOB": [
+				{
+					"name": "Success",
+					"value": 60
+				},
+				{
+					"name": "Errors",
+					"value": 20
+				},
+				{
+					"name": "Warnings",
+					"value": 20
+				}
+	],
+
+	"message": "" 
+}

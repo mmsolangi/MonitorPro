@@ -1,0 +1,12 @@
+
+{
+	"status": "success",
+	"nfemails": [
+				{ "id":"1", "lob": "Order" ,"lobid" : "1", "event": "On Success", "emails": "abc@yahoo.com;sohail@yahoo.com" },
+				{ "id":"1", "lob": "Order" ,"lobid" : "1", "event": "On Error", "emails": "error@yahoo.com;sohail@yahoo.com" },
+				{ "id":"2", "lob": "Inventory" ,"lobid" : "2", "event": "On Error" ,"emails": "abc@yahoo.com;sohail@yahoo.com"},
+				{ "id":"3", "lob": "Catalog" ,"lobid" : "3", "event": "On Critical Error","emails": "abc@yahoo.com;sohail@yahoo.com" }
+				
+	],
+	"message": "" 
+}

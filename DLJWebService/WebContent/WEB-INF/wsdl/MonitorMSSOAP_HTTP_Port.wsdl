@@ -1,0 +1,77 @@
+<wsdl:definitions name="MonitorMS"
+	targetNamespace="http://royalcyber.com/MonitorMS" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:tns="http://royalcyber.com/MonitorMS" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:NS1="http://www.royalcyber.com/monitor" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+	<wsdl:types>
+		<xsd:schema targetNamespace="http://www.royalcyber.com/monitor"
+			xmlns:Q1="http://www.royalcyber.com/monitor" xmlns:mrm="http://royalcyber.com/MonitorMS">
+			<xsd:element name="ErrorCode" type="xsd:string" />
+			<xsd:element name="ErrorType" type="xsd:string" />
+			<xsd:element name="MonitorDebugDetail" type="Q1:MonitorDebugDetailType" />
+			<xsd:element name="OutcomeStatus" type="xsd:string" />
+			<xsd:element name="InputPayload" type="xsd:string" />
+			<xsd:element name="ExecutionSeq" type="xsd:string" />
+			<xsd:element name="LobCode" type="xsd:string" />
+			<xsd:element name="OutputPayload" type="xsd:string" />
+			<xsd:element name="ClientUserID" type="xsd:string" />
+			<xsd:element name="SL_Code" type="xsd:string" />
+			<xsd:element name="MonitorDebugPayload" type="Q1:MonitorDebugPayloadType" />
+			<xsd:element name="ErroredApplicationCode" type="xsd:string" />
+			<xsd:element name="SourceSystemErrorDesc" type="xsd:string" />
+			<xsd:element name="CallingApplicationCode" type="xsd:string" />
+			<xsd:element name="CorrelationID" type="xsd:string" />
+			<xsd:element name="SL_StepName" type="xsd:string" />
+			<xsd:element name="ClientRequestDateTime" type="xsd:string" />
+			<xsd:element name="ParentCorrelationID" type="xsd:string" />
+			<xsd:complexType name="MonitorDebugDetailType">
+				<xsd:sequence>
+					<xsd:element ref="Q1:ExecutionSeq" />
+					<xsd:element ref="Q1:SL_StepName" />
+					<xsd:element ref="Q1:InputPayload" />
+					<xsd:element ref="Q1:OutputPayload" />
+					<xsd:element ref="Q1:ErrorType" />
+					<xsd:element ref="Q1:ErroredApplicationCode" />
+					<xsd:element ref="Q1:SourceSystemErrorDesc" />
+				</xsd:sequence>
+			</xsd:complexType>
+			<xsd:complexType name="MonitorDebugPayloadType">
+				<xsd:sequence>
+					<xsd:element ref="Q1:SL_Code" />
+					<xsd:element ref="Q1:CallingApplicationCode" />
+					<xsd:element ref="Q1:ParentCorrelationID" />
+					<xsd:element ref="Q1:CorrelationID" />
+					<xsd:element ref="Q1:ClientUserID" />
+					<xsd:element ref="Q1:ClientRequestDateTime" />
+					<xsd:element ref="Q1:OutcomeStatus" />
+					<xsd:element ref="Q1:LobCode" />
+					<xsd:element ref="Q1:ErrorCode" />
+					<xsd:element maxOccurs="2" ref="Q1:MonitorDebugDetail" />
+				</xsd:sequence>
+			</xsd:complexType>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="Loaddata_in">
+		<wsdl:part name="MonitorDebugPayload" element="NS1:MonitorDebugPayload"></wsdl:part>
+	</wsdl:message>
+	<wsdl:portType name="MonitorMSPortType">
+		<wsdl:operation name="Loaddata">
+			<wsdl:input name="Loaddata_Input" message="tns:Loaddata_in"></wsdl:input>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="MonitorMSSOAP_HTTP_Binding" type="tns:MonitorMSPortType">
+		<soap:binding style="document"
+			transport="http://schemas.xmlsoap.org/soap/http" />
+		<wsdl:operation name="Loaddata">
+			<soap:operation soapAction="Loaddata" />
+			<wsdl:input name="Loaddata_Input">
+				<soap:body parts="MonitorDebugPayload" use="literal" />
+			</wsdl:input>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="MonitorMSSOAP_HTTP_Service">
+		<wsdl:port name="MonitorMSSOAP_HTTP_Port" binding="tns:MonitorMSSOAP_HTTP_Binding">
+			<soap:address
+				location="http://localhost:8080/DLJWebService/services/MonitorMSSOAP_HTTP_Port" />
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

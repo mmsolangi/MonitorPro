@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <!--------------------
+LOGIN FORM
+by: Amit Jakhu
+www.amitjakhu.com
+--------------------->
+    <!--META-->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Login Form</title>
+    <!--STYLESHEETS-->
+    <link href="css/style.css" rel="stylesheet" type="text/css" />
+    <script src="Monitoring/js/jquery-1.9.1.js"></script>
+    <script src="Monitoring/js/siteconstants.js"></script>
+    <script src="Monitoring/js/jquery-ui.js"></script>
+    <script src="Monitoring/js/jquery.cookie.js"></script>
+    <script src="Monitoring/js/jquery-placeholder.js"></script>
+    <link rel="stylesheet" href="Monitoring/css/jquery-ui.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="Monitoring/css/jquery-ui.css" />
+    <!--SCRIPTS-->
+    <!--<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>-->
+    <!--Slider-in icons-->
+    <script src="Monitoring/js/loginhelper.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+        	 $(".username").keypress(function (e) {
+           	  if (e.keyCode != 9 && e.keyCode != 13) {
+          		  var txt = String.fromCharCode(e.which);
+           	  	  if(txt.match(/^[^A-Za-z0-9\-\.\b\t]+$/))
+           	  	  {
+           	          	return false;
+           	  	  }
+           	  }
+           	});
+
+        	 $(".password").keypress(function (e) {
+              	  if (e.keyCode != 9 && e.keyCode != 13) {
+             		  var txt = String.fromCharCode(e.which);
+              	  	  if(txt.match(/^[^A-Za-z0-9\-\.\b\t]+$/))
+              	  	  {
+              	          return false;
+              	  	  }
+              	  }
+             });
+        	
+            $(".username").focus(function () {
+                $(".user-icon").css("left", "-48px");
+            });
+            $(".username").blur(function () {
+                $(".user-icon").css("left", "0px");
+            });
+
+            $(".password").focus(function () {
+                $(".pass-icon").css("left", "-48px");
+            });
+            $(".password").blur(function () {
+                $(".pass-icon").css("left", "0px");
+            });
+		$(".username").focus();
+
+        });
+        function validate(frm) {
+        	 if (frm.username.value=="")
+             {
+                 alert('Please enter username');
+                 frm.username.focus();
+                 return false;                        
+             } 
+             if(frm.password.value == "") {
+                 alert('Please enter password');
+                 frm.password.focus();
+                 return false;
+             }
+             
+            LoginHelper.ValidateLogin(frm.username.value, frm.password.value);
+            return false;
+            
+        }
+        
+      
+    </script>
+    <style>
+    
+    #circle {
+    width: 50px;
+    height: 50px;
+    background: blue;
+    -moz-border-radius: 50px;
+    -webkit-border-radius: 50px;
+    border-radius: 50px;
+}
+    </style>
+</head>
+<body>
+
+    <!--WRAPPER-->
+    <div id="wrapper">
+        <!--SLIDE-IN ICONS-->
+        <div class="user-icon">
+        </div>
+        <div class="pass-icon">
+        </div>
+        <!--END SLIDE-IN ICONS-->
+        <!--LOGIN FORM-->
+        <form name="login-form" class="login-form" method="post" action="" onsubmit="return validate(this);">
+        <!--HEADER-->
+        <div class="header">
+            <!--TITLE-->
+            <h1>
+                Login
+            </h1>
+            <!--END TITLE-->
+            <!--DESCRIPTION-->
+            <span>Fill out the form below to login to Message Monitor Pro</span><!--END DESCRIPTION-->
+        </div>
+        <!--END HEADER-->
+        <!--CONTENT-->
+        <div class="content">
+            <!--USERNAME-->
+            <input name="username" type="text" class="input username" value="" placeholder='Enter username' /><!--END USERNAME-->
+            <!--PASSWORD-->
+            <input name="password" type="password" class="input password" value=""  placeholder='Enter password'/><!--END PASSWORD-->
+        </div>
+        <!--END CONTENT-->
+        <!--FOOTER-->
+        <div class="footer">
+            <!--LOGIN BUTTON-->
+            <input type="submit" name="submit" value="Login" class="button" /><!--END LOGIN BUTTON-->
+        </div>
+        <!--END FOOTER-->
+        </form>
+        <!--END LOGIN FORM-->
+    </div>
+    <!--END WRAPPER-->
+    <!--GRADIENT-->
+    <div class="gradient">
+    </div>
+    <!--END GRADIENT-->
+</body>
+</html>
